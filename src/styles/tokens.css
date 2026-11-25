@@ -1,33 +1,39 @@
 /*
  * Tokens de color y elevación de Material Design 3.
+ * Esquema generado a partir del color de origen #ECE819, en variantes clara y oscura.
  * Tailwind se usa para layout y espaciado; los colores viven aquí.
  */
 :root {
   color-scheme: light;
 
-  --md-primary: #00639b;
-  --md-on-primary: #ffffff;
-  --md-primary-container: #cfe5ff;
-  --md-on-primary-container: #001d33;
+  /* Primario: el color de origen se usa como relleno; el texto usa un tono
+     oscuro derivado para conservar contraste AA. */
+  --md-primary: #ece819;
+  --md-on-primary: #1d1e00;
+  --md-primary-container: #f7f3b0;
+  --md-on-primary-container: #1d1e00;
+  --md-primary-ink: #5e5c00;
 
-  --md-secondary: #4e616d;
+  /* Secundario: oliva desaturado, derivado del origen. */
+  --md-secondary: #5e6041;
   --md-on-secondary: #ffffff;
-  --md-secondary-container: #d1e5f3;
-  --md-on-secondary-container: #091e29;
+  --md-secondary-container: #e4e5c3;
+  --md-on-secondary-container: #1a1c05;
 
-  --md-tertiary: #00696b;
+  /* Terciario: complementario violeta del amarillo de origen. */
+  --md-tertiary: #5b4ac6;
   --md-on-tertiary: #ffffff;
-  --md-tertiary-container: #9cf1f2;
-  --md-on-tertiary-container: #002020;
+  --md-tertiary-container: #e5deff;
+  --md-on-tertiary-container: #160067;
 
   --md-error: #ba1a1a;
   --md-on-error: #ffffff;
   --md-error-container: #ffdad6;
   --md-on-error-container: #410002;
 
-  --md-warning: #7a4f00;
+  --md-warning: #8a4f00;
   --md-warning-container: #ffdea8;
-  --md-on-warning-container: #261900;
+  --md-on-warning-container: #2a1800;
 
   --md-success: #1e6b33;
   --md-success-container: #a9f5b8;
@@ -36,20 +42,38 @@
   --md-critical: #8c0009;
   --md-on-critical: #ffffff;
 
-  --md-surface: #f8f9fc;
+  /* Superficies neutras con tinte cálido del origen. */
+  --md-surface: #fdfcf2;
   --md-surface-container-lowest: #ffffff;
-  --md-surface-container-low: #f2f4f8;
-  --md-surface-container: #eceef3;
-  --md-surface-container-high: #e6e8ee;
-  --md-surface-container-highest: #e0e2e8;
+  --md-surface-container-low: #f7f6ea;
+  --md-surface-container: #f1f0e2;
+  --md-surface-container-high: #ebeade;
+  --md-surface-container-highest: #e5e4d6;
 
-  --md-on-surface: #191c20;
-  --md-on-surface-variant: #41474d;
-  --md-outline: #71787e;
-  --md-outline-variant: #c1c7ce;
+  --md-on-surface: #1b1d14;
+  --md-on-surface-variant: #47483a;
+  --md-outline: #787968;
+  --md-outline-variant: #c8c8b4;
 
-  --md-inverse-surface: #2e3135;
-  --md-inverse-on-surface: #eff1f6;
+  --md-inverse-surface: #303226;
+  --md-inverse-on-surface: #f3f2e2;
+
+  /* Colores derivados de apoyo (estados y superficies compuestas). */
+  --md-app-bar: rgba(253, 252, 242, 0.94);
+  --md-glow-primary: rgba(236, 232, 25, 0.12);
+  --md-glow-tertiary: rgba(91, 74, 198, 0.07);
+  --md-primary-soft: rgba(94, 92, 0, 0.08);
+  --md-primary-border: rgba(94, 92, 0, 0.22);
+  --md-primary-hover: #d9d516;
+  --md-secondary-hover: #d9dabc;
+  --md-meter-track: rgba(94, 92, 0, 0.16);
+  --md-stat-gradient-end: #fbfae4;
+  --md-disabled-ink: rgba(27, 29, 20, 0.38);
+  --md-disabled-bg: rgba(27, 29, 20, 0.12);
+  --md-alert-error-border: rgba(186, 26, 26, 0.35);
+  --md-alert-info-border: rgba(236, 232, 25, 0.6);
+  --md-alert-warning-border: rgba(138, 79, 0, 0.3);
+  --md-spinner-track: rgba(29, 30, 0, 0.25);
 
   --md-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
   --md-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
@@ -62,4 +86,74 @@
   --md-radius-xl: 28px;
 
   --md-font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Tema oscuro generado desde el mismo color de origen #ECE819. */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --md-primary: #ece819;
+  --md-on-primary: #1d1e00;
+  --md-primary-container: #474700;
+  --md-on-primary-container: #f7f3b0;
+  --md-primary-ink: #ece819;
+
+  --md-secondary: #c7c8a7;
+  --md-on-secondary: #2f3218;
+  --md-secondary-container: #46482c;
+  --md-on-secondary-container: #e4e5c3;
+
+  --md-tertiary: #c6bfff;
+  --md-on-tertiary: #2b1a85;
+  --md-tertiary-container: #4332a8;
+  --md-on-tertiary-container: #e5deff;
+
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
+
+  --md-warning: #ffb95c;
+  --md-on-warning: #472a00;
+  --md-warning-container: #683c00;
+  --md-on-warning-container: #ffdea8;
+
+  --md-success: #8dd99a;
+  --md-on-success: #00390f;
+  --md-success-container: #00531c;
+  --md-on-success-container: #a9f5b8;
+
+  --md-critical: #ffb4ab;
+  --md-on-critical: #690005;
+
+  --md-surface: #12130d;
+  --md-surface-container-lowest: #1a1c13;
+  --md-surface-container-low: #1e2016;
+  --md-surface-container: #22241a;
+  --md-surface-container-high: #2c2e23;
+  --md-surface-container-highest: #37392d;
+
+  --md-on-surface: #e5e4d6;
+  --md-on-surface-variant: #c8c8b4;
+  --md-outline: #92937f;
+  --md-outline-variant: #47483a;
+
+  --md-inverse-surface: #e5e4d6;
+  --md-inverse-on-surface: #303226;
+
+  --md-app-bar: rgba(18, 19, 13, 0.94);
+  --md-glow-primary: rgba(236, 232, 25, 0.08);
+  --md-glow-tertiary: rgba(198, 191, 255, 0.06);
+  --md-primary-soft: rgba(236, 232, 25, 0.12);
+  --md-primary-border: rgba(236, 232, 25, 0.3);
+  --md-primary-hover: #f7f34a;
+  --md-secondary-hover: #52543a;
+  --md-meter-track: rgba(236, 232, 25, 0.2);
+  --md-stat-gradient-end: #24261a;
+  --md-disabled-ink: rgba(229, 228, 214, 0.38);
+  --md-disabled-bg: rgba(229, 228, 214, 0.12);
+  --md-alert-error-border: rgba(255, 180, 171, 0.35);
+  --md-alert-info-border: rgba(236, 232, 25, 0.45);
+  --md-alert-warning-border: rgba(255, 185, 92, 0.35);
+  --md-spinner-track: rgba(29, 30, 0, 0.25);
 }

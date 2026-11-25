@@ -2,14 +2,31 @@ import { useEffect, useRef, useState } from 'react'
 import FormularioSiniestro from './components/FormularioSiniestro'
 import PanelResultados from './components/PanelResultados'
 import { Chip } from './components/ui'
-import { IconoAmbulancia } from './components/Iconos'
+import { IconoAmbulancia, IconoLuna, IconoSol } from './components/Iconos'
 import { ES_MODO_DEMO } from './services/prediccion'
+
+const CLAVE_TEMA = 'samuapp-tema'
+const TEMA_CLARO = 'light'
+const TEMA_OSCURO = 'dark'
+
+function leerTemaInicial() {
+  if (typeof window === 'undefined') return TEMA_CLARO
+  try {
+    const guardado = window.localStorage.getItem(CLAVE_TEMA)
+    if (guardado === TEMA_CLARO || guardado === TEMA_OSCURO) return guardado
+  } catch {
+    // Sin almacenamiento disponible se usa la preferencia del sistema.
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? TEMA_OSCURO : TEMA_CLARO
+}
 
 export default function App() {
   const [resultado, setResultado] = useState(null)
   const [error, setError] = useState(null)
   const [cargando, setCargando] = useState(false)
+  const [tema, setTema] = useState(leerTemaInicial)
   const panelRef = useRef(null)
+  const esOscuro = tema === TEMA_OSCURO
 
   function manejarInicio() {
     setResultado(null)
@@ -32,6 +49,18 @@ export default function App() {
   }
 
   useEffect(() => {
+    document.documentElement.dataset.theme = tema
+    try {
+      window.localStorage.setItem(CLAVE_TEMA, tema)
+    } catch {
+      // Si el almacenamiento está bloqueado, el tema sigue funcionando en memoria.
+    }
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', esOscuro ? '#12130d' : '#ECE819')
+  }, [tema, esOscuro])
+
+  useEffect(() => {
     if (!resultado && !error) return
     if (!window.matchMedia('(max-width: 1023px)').matches) return
 
@@ -51,7 +80,7 @@ export default function App() {
               <IconoAmbulancia width={26} height={26} />
             </span>
             <div className="min-w-0">
-              <p className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-[var(--md-primary)]">
+              <p className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-[var(--md-primary-ink)]">
                 SAMU · Despacho asistido
               </p>
               <h1 className="text-base font-medium leading-tight sm:text-xl">
@@ -65,6 +94,25 @@ export default function App() {
               Solo front end
             </Chip>
             {ES_MODO_DEMO ? <Chip tono="demo">MODO DEMO</Chip> : null}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={esOscuro}
+              aria-label="Tema oscuro"
+              title={esOscuro ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+              className="md-theme-switch"
+              onClick={() => setTema(esOscuro ? TEMA_CLARO : TEMA_OSCURO)}
+            >
+              <span className="md-theme-switch__icon" aria-hidden="true">
+                <IconoSol />
+              </span>
+              <span className="md-theme-switch__icon" aria-hidden="true">
+                <IconoLuna />
+              </span>
+              <span className="md-theme-switch__thumb" aria-hidden="true">
+                {esOscuro ? <IconoLuna /> : <IconoSol />}
+              </span>
+            </button>
           </div>
         </div>
       </header>

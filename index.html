@@ -3,7 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#00639b" />
+    <meta name="theme-color" content="#ECE819" />
+    <script>
+      // Aplica el tema guardado antes del primer pintado para evitar destellos.
+      ;(function () {
+        try {
+          var guardado = localStorage.getItem('samuapp-tema')
+          var oscuro = guardado
+            ? guardado === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+          document.documentElement.dataset.theme = oscuro ? 'dark' : 'light'
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
     <meta
       name="description"
       content="SAMUAPP: captura de siniestros viales y recomendación de despacho de ambulancias."
