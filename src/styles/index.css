@@ -77,7 +77,7 @@
     border-radius: 14px;
     background: var(--md-primary);
     color: var(--md-on-primary);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
   }
 
   .md-eyebrow {
@@ -93,7 +93,7 @@
     border: 1px solid var(--md-outline-variant);
     border-radius: var(--md-radius-lg);
     background: var(--md-surface-container-lowest);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
   }
 
   .md-card--flat {
@@ -101,7 +101,7 @@
   }
 
   .md-card--elevated {
-    box-shadow: var(--md-elevation-2);
+    box-shadow: var(--md-soft-shadow-hover);
   }
 
   .md-section-title {
@@ -298,7 +298,7 @@
   .md-segment.is-selected {
     background: var(--md-primary);
     color: var(--md-on-primary);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
   }
 
   .md-segment input:focus-visible + span {
@@ -338,12 +338,12 @@
   .md-btn--filled {
     background: var(--md-primary);
     color: var(--md-on-primary);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
   }
 
   .md-btn--filled:hover:not(:disabled) {
     background: var(--md-primary-hover);
-    box-shadow: var(--md-elevation-2);
+    box-shadow: var(--md-soft-shadow-hover);
   }
 
   .md-btn--tonal {
@@ -355,7 +355,8 @@
     background: var(--md-secondary-hover);
   }
 
-  .md-btn--outlined {
+  .md-btn--outline,
+.md-btn--outlined {
     border: 1px solid var(--md-outline);
     background: transparent;
     color: var(--md-primary-ink);
@@ -384,7 +385,43 @@
     outline-color: var(--md-inverse-surface);
   }
 
-  .md-btn__icon {
+  .md-btn--full {
+    display: block;
+    width: 100%;
+  }
+
+  .md-btn--half {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .md-text-info {
+    margin-top: 5px;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--md-on-surface-variant);
+  }
+
+  /* ---------- Sombras suaves para tema claro ---------- */
+:root {
+  --md-soft-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --md-soft-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --md-soft-shadow-focused: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Sombra suave para reemplazar elevación estándar */
+.soft-shadow {
+  box-shadow: var(--md-soft-shadow) !important;
+}
+.soft-shadow:hover {
+  box-shadow: var(--md-soft-shadow-hover) !important;
+}
+.soft-shadow:focus-visible {
+  box-shadow: var(--md-soft-shadow-focused) !important;
+}
+
+/* ---------- Botones ---------- */
+.md-btn__icon {
     display: inline-flex;
     align-items: center;
   }
@@ -502,7 +539,7 @@
     border-radius: 50%;
     background: var(--md-outline);
     color: var(--md-surface);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
     transform: translateY(-50%);
     transition:
       transform 0.2s ease,
@@ -579,7 +616,7 @@
     border: 1px solid var(--md-outline-variant);
     border-radius: var(--md-radius-md);
     background: var(--md-surface-container-lowest);
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-soft-shadow);
   }
 
   .md-stat--primary {

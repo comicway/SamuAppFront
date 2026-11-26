@@ -113,7 +113,7 @@ export default function PanelResultados({ resultado, cargando, error, esDemo }) 
               : ''}
       </p>
 
-      <div className="md-card md-card--elevated">
+      <div className="md-card md-card--elevated" style={{ marginTop: 0 }}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="md-eyebrow">Panel de resultados</p>

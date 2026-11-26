@@ -194,13 +194,13 @@ export default function FormularioSiniestro({
       className="space-y-4"
     >
       <div className="md-card md-card--elevated">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="md-eyebrow">Captura del siniestro</p>
             <h2 id="titulo-formulario" className="mt-1 text-xl font-medium">
               Datos del siniestro
             </h2>
-            <p className="md-note mt-1">
+            <p className="md-text-info">
               Los campos con <span className="md-field__required">*</span> son obligatorios.
               Fecha, hora, comuna, región, carácter urbano y al menos un involucrado son el
               mínimo del modelo.
@@ -310,7 +310,7 @@ export default function FormularioSiniestro({
           <div>
             <p className="md-eyebrow">Personas involucradas</p>
             <h2 className="mt-1 md-section-title">Involucrados</h2>
-            <p className="md-note mt-1">
+            <p className="md-text-info">
               El involucrado 1 es obligatorio. Puedes agregar hasta {MAX_INVOLUCRADOS};
               cada slot agregado debe completarse.
             </p>
@@ -339,8 +339,8 @@ export default function FormularioSiniestro({
           ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="md-note">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="md-text-info">
             Máximo {MAX_INVOLUCRADOS} involucrados (CA-02.2). El primer slot no se puede
             quitar.
           </p>
@@ -359,7 +359,7 @@ export default function FormularioSiniestro({
         <div className="mb-4">
           <p className="md-eyebrow">Auditoría</p>
           <h2 className="mt-1 md-section-title">Registro opcional</h2>
-          <p className="md-note mt-1">
+          <p className="md-text-info">
             Estos campos no intervienen en la predicción ni impiden el envío.
           </p>
         </div>
@@ -401,31 +401,35 @@ export default function FormularioSiniestro({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p
-          id="estado-envio"
-          className={`flex items-start gap-2 text-sm ${
-            valido ? 'text-[var(--md-success)]' : 'text-[var(--md-on-surface-variant)]'
-          }`}
-          aria-live="polite"
-        >
-          {valido ? (
-            <IconoCheck className="mt-0.5 shrink-0" />
-          ) : (
-            <IconoInfo className="mt-0.5 shrink-0" />
-          )}
-          {mensajeEstado}
-        </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <p
+            id="estado-envio"
+            className={`flex items-start gap-2 text-sm ${
+              valido ? 'text-[var(--md-success)]' : 'text-[var(--md-on-surface-variant)]'
+            }`}
+            aria-live="polite"
+          >
+            {valido ? (
+              <IconoCheck className="mt-0.5 shrink-0" />
+            ) : (
+              <IconoInfo className="mt-0.5 shrink-0" />
+            )}
+            {mensajeEstado}
+          </p>
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="text" onClick={limpiarFormulario} disabled={cargando}>
+        <div className="flex flex-row items-center gap-3">
+          <Button variant="outline" onClick={limpiarFormulario} disabled={cargando} className="md-btn--half">
             Limpiar
           </Button>
           <Button
             type="submit"
+            variant="filled"
             disabled={!valido || cargando}
             aria-describedby="estado-envio"
             icon={cargando ? <span className="md-spinner" /> : <IconoPulso />}
+            className="md-btn--half"
           >
             {cargando ? 'Consultando…' : 'Predecir despacho'}
           </Button>
