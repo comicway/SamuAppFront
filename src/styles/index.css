@@ -276,6 +276,7 @@
     justify-content: center;
     min-height: 2.75rem;
     border-radius: 999px;
+    border: 1px solid var(--md-outline-variant);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--md-on-surface-variant);
