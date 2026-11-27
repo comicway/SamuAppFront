@@ -1,0 +1,23 @@
+# Dependencias y artefactos de construccion
+node_modules/
+dist/
+.vite/
+*.local
+
+# Variables de entorno (NUNCA subir credenciales)
+.env
+.env.*
+!.env.example
+
+# Logs y cobertura
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

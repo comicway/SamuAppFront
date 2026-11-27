@@ -1,14 +1,15 @@
-# SAMUAPP · Front end de captura y recomendación de despacho
+# SAMUAPP · Front end de captura y acceso
 
-Prototipo **solo front end** para registrar un siniestro vial y mostrar la recomendación de
-despacho del SAMU. No incluye backend, Cloud Functions, autenticación, reglas de Firebase ni
-persistencia.
+Aplicación web para registrar un siniestro vial, iniciar sesión y mostrar la
+recomendación de despacho del SAMU. Consume la interfaz de predicción del
+servicio SAMUAPP; no calcula el modelo.
 
 - React 18, JavaScript (sin TypeScript).
 - Vite.
 - Tailwind CSS para layout y espaciado.
 - Tokens de color de Material Design 3 en CSS.
 - Tipografía Roboto.
+- Vitest para las pruebas y ESLint para el análisis estático.
 
 ## Puesta en marcha
 
@@ -24,20 +25,79 @@ npm run build
 npm run preview
 ```
 
+## Scripts
+
+| Script | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo de Vite. |
+| `npm run build` | Compila el sitio estático en `dist/`. |
+| `npm run preview` | Sirve localmente lo compilado en `dist/`. |
+| `npm test` | Ejecuta la suite de pruebas (Vitest). |
+| `npm run test:watch` | Pruebas en modo interactivo. |
+| `npm run test:coverage` | Pruebas con informe de cobertura. |
+| `npm run lint` | Análisis estático (ESLint). |
+| `npm run lint:fix` | Análisis estático con correcciones automáticas. |
+| `npm run verificar` | `lint` + `test` + `build`: la puerta de calidad de la CI. |
+
 ## Variables de entorno
 
 Copia `.env.example` a `.env` y ajusta lo necesario.
 
 | Variable | Valores | Efecto |
 |---|---|---|
+| `VITE_AUTH_MODE` | `off`, `demo` (por defecto), `firebase` | Selecciona el subsistema de identidad. |
 | `VITE_ADAPTADOR_PREDICCION` | `mock` (por defecto), `http` | Selecciona el adaptador de la interfaz `predecirSiniestro`. |
 | `VITE_API_BASE_URL` | URL | Base del servicio HTTP. Sin ella, el adaptador HTTP falla de forma explícita. |
 | `VITE_API_PREDICT_PATH` | ruta | Por defecto `/api/v1/predictions`. |
+| `VITE_API_AUTH_PATH` | ruta | Por defecto `/api/v1/auth/sesion`. |
+| `VITE_API_REGISTER_PATH` | ruta | Por defecto `/api/v1/auth/registro`. |
+| `VITE_API_TIMEOUT_MS` | entero | Espera máxima de la respuesta del servicio. Por defecto `10000`. |
 | `VITE_MOCK_RETARDO_MS` | entero | Retardo artificial del mock. |
 | `VITE_MOCK_SIN_RECOMENDACION` | `true`/`false` | Si es `true`, el mock omite `recomendacion` para probar RN-01..RN-08 en cliente. |
+| `VITE_FIREBASE_API_KEY` | clave | Clave de API de Firebase Authentication. No es un secreto: viaja en el bundle del navegador. |
+| `VITE_FIREBASE_PROJECT_ID` | proyecto | Identificador del proyecto de Firebase. |
+| `VITE_FIREBASE_AUTH_DOMAIN` | dominio | Dominio de autenticación de Firebase. |
+| `VITE_FIREBASE_REGION` | región | Región del proyecto. Por defecto `southamerica-west1`. |
 
 Con `VITE_ADAPTADOR_PREDICCION=mock` el panel muestra siempre la etiqueta visible
 **MODO DEMO**.
+
+## Acceso al sistema (HU-01)
+
+El control de acceso sigue el modelo de roles de §4.10: `operador`,
+`supervisor` y `admin`. El token de identidad viaja en la cabecera
+`Authorization: Bearer <token>` y el `uid` lo toma **siempre** el servidor a
+partir del token verificado, nunca el formulario.
+
+El modo se elige con `VITE_AUTH_MODE`:
+
+| Modo | Comportamiento |
+|---|---|
+| `off` | No hay control de acceso: la aplicación abre directo. Es el modo en que vivía el prototipo. |
+| `demo` | El ingreso se hace contra el servicio (`POST /api/v1/auth/sesion`). Si el servicio no responde, la pantalla ofrece la identidad local de demostración, que solo es válida con el adaptador `mock`. |
+| `firebase` | El ingreso se hace contra Firebase Authentication (Identity Platform), que es la vía de producción. El rol llega como *custom claim* del token; el usuario no puede elegirlo. |
+
+La sesión se guarda en `sessionStorage`: se pierde al cerrar la pestaña, que
+es el comportamiento esperado de un turno de despacho. El token nunca se
+escribe en la URL ni en el log.
+
+Si el servicio responde `401` porque el token venció, la aplicación vuelve al
+inicio de sesión **sin desmontar el formulario**: no se pierde lo que el
+operador ya capturó (CA-01.6).
+
+### Credenciales de demostración
+
+Con el servicio en modo desarrollo (`SAMUAPP_AUTH_MODE=dev`) se siembran tres
+cuentas de prueba:
+
+| Correo | Rol | Contraseña |
+|---|---|---|
+| `operador@samuapp.cl` | Operador | `Samuapp2026!` |
+| `supervisor@samuapp.cl` | Supervisor | `Samuapp2026!` |
+| `admin@samuapp.cl` | Administrador | `Samuapp2026!` |
+
+El registro de una cuenta nueva desde la aplicación usa el mismo servicio y
+exige una contraseña de **mínimo 12 caracteres** (CA-01.3).
 
 ## Árbol de archivos
 
@@ -45,12 +105,18 @@ Con `VITE_ADAPTADOR_PREDICCION=mock` el panel muestra siempre la etiqueta visibl
 .
 ├── .env.example
 ├── .gitignore
+├── eslint.config.js
 ├── index.html
 ├── package.json
 ├── package-lock.json
 ├── postcss.config.js
+├── public
+│   └── _redirects
+├── render.yaml
 ├── tailwind.config.js
 ├── vite.config.js
+├── vitest.config.js
+├── vitest.setup.js
 ├── README.md
 └── src
     ├── App.jsx
@@ -60,17 +126,27 @@ Con `VITE_ADAPTADOR_PREDICCION=mock` el panel muestra siempre la etiqueta visibl
     │   ├── Iconos.jsx
     │   ├── InvolucradoCard.jsx
     │   ├── PanelResultados.jsx
+    │   ├── PantallaAcceso.jsx
+    │   ├── SesionIndicador.jsx
     │   └── ui.jsx
     ├── data
     │   ├── catalogos.js
     │   └── regionesComunas.js
     ├── domain
     │   ├── despacho.js
+    │   ├── sesion.js
     │   └── validacion.js
     ├── services
+    │   ├── auth
+    │   │   ├── almacenSesion.js
+    │   │   ├── clienteAuth.js
+    │   │   ├── proveedorBackend.js
+    │   │   ├── proveedorFirebase.js
+    │   │   └── token.js
     │   ├── adaptadorHttp.js
     │   ├── adaptadorMock.js
     │   ├── errores.js
+    │   ├── eventos.js
     │   └── prediccion.js
     ├── styles
     │   ├── index.css
@@ -84,7 +160,8 @@ Con `VITE_ADAPTADOR_PREDICCION=mock` el panel muestra siempre la etiqueta visibl
 1. `FormularioSiniestro` valida en cliente (CA-02.2, CA-02.3, CA-02.4 y CA-02.7).
 2. Si es válido, construye el payload `{ data, notas?, siniestroRef? }` y llama únicamente a
    `predecirSiniestro(payload)`.
-3. `prediccion.js` delega en el adaptador activo (`mock` u `http`).
+3. `prediccion.js` delega en el adaptador activo (`mock` u `http`). El adaptador HTTP adjunta
+   el token de identidad en la cabecera `Authorization: Bearer`.
 4. `PanelResultados` muestra la respuesta. Si trae `recomendacion`, la muestra tal cual. Si no
    la trae, aplica RN-01 a RN-08 y marca el resultado como **Calculado en cliente**.
 5. ATS, AEB y AEA solo se renderizan si la respuesta los incluye.
@@ -149,7 +226,15 @@ forma de §4.9: `predictionId`, `pFatal`, `victimasGravesPred`, `nivelAlerta`,
     existen, no se renderiza ningún bloque.
 12. **Diseño:** tarjetas con elevación, chips, botones MD3, etiquetas flotantes y foco visible.
     Una columna en móvil; dos columnas en escritorio, con el panel sticky.
-13. **Sin persistencia local** y sin autenticación: están fuera del alcance de esta tarea.
+13. **La identidad vive en `services/auth/`.** `domain/sesion.js` contiene las reglas puras
+    (validación, expiración, jerarquía de roles) sin dependencias de React ni de plataforma.
+14. **El token se adjunta en un solo lugar.** `services/auth/token.js` es la costura entre la
+    sesión y los adaptadores: el token no queda desincronizado con la interfaz.
+15. **Con Firebase, el rol no lo elige el usuario.** Se toma del *custom claim* del token, que
+    es lo que impide el escalamiento de privilegios.
+16. **La identidad local de demostración solo existe con el adaptador `mock`.** Sin token no
+    hay forma de llamar al servicio real, y la interfaz no ofrece un camino que prometa lo
+    contrario.
 
 ## Reglas de respaldo en cliente (RN-01..RN-08)
 
@@ -199,13 +284,12 @@ clínico.
    para casos mixtos. Se documenta el supuesto conservador anterior.
 10. **`paramedico` en RN-06/RN-07:** no se enumera explícitamente; se asume heredado.
 11. **Límites de longitud** de `notas` y `siniestroRef`: no definidos.
-12. **Adaptador HTTP:** el contrato es una Callable Function de Firebase; este adaptador hace
-    un `POST` JSON simple. No incluye token de identidad, CORS ni App Check. Está sin
-    conectar y solo se activa por variable de entorno.
-13. **CA-02.1 (consultar el último siniestro), CA-02.5 (paridad con entrenamiento) y CA-02.6
-    (vector de 40 características):** dependen del backend y de persistencia; no son
-    verificables solo con este front end.
-14. **Autenticación, roles y persistencia:** fuera del alcance por enunciado.
+12. **App Check y cuota por `uid`:** §4.10 los exige, pero su implementación depende del
+    proyecto de Firebase; no están en esta versión.
+13. **Persistencia del histórico:** el backend ya la tiene (SQLite); la vista de histórico en
+    la SPA todavía no.
+14. **Verificación de correo y recuperación de contraseña:** las aporta Firebase
+    Authentication; el modo de desarrollo no las implementa.
 
 ## Cómo probar el fallback de recomendación
 
@@ -228,3 +312,37 @@ npm run dev
 
 Sin `VITE_API_BASE_URL`, el panel muestra un error explícito de configuración y no inventa
 una predicción.
+
+## Cómo probar el acceso al sistema
+
+Con el servicio corriendo en modo desarrollo:
+
+```bash
+# En el repositorio del backend:
+SAMUAPP_AUTH_MODE=dev python -m uvicorn adapters.api.main:app --port 8000
+```
+
+```bash
+# En este repositorio:
+cp .env.example .env
+# Edita .env:
+# VITE_AUTH_MODE=demo
+# VITE_ADAPTADOR_PREDICCION=http
+# VITE_API_BASE_URL=http://127.0.0.1:8000
+npm run dev
+```
+
+Ingresa con `operador@samuapp.cl` / `Samuapp2026!`. El token que devuelve el servicio se
+adjunta a la petición de predicción, y el panel muestra el usuario y su rol en la cabecera.
+
+## Despliegue
+
+`render.yaml` describe el sitio estático: Render compila con `npm ci && npm run build` y
+sirve `dist/`, reescribiendo todas las rutas a `index.html` para el enrutado del cliente.
+
+Las variables `VITE_*` se incorporan al bundle **durante la construcción**: Render las
+inyecta en el entorno del build. Para cambiar la URL del servicio hay que reconstruir el
+sitio, no solo reiniciarlo.
+
+El archivo `public/_redirects` es la equivalente para hosted como Netlify o Cloudflare
+Pages; en Render la reescritura la hace el blueprint.

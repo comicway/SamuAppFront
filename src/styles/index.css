@@ -757,6 +757,114 @@
     border-color: var(--md-primary-border);
     border-top-color: var(--md-primary-ink);
   }
+
+  /* ---------- Acceso al sistema ---------- */
+  .md-acceso-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: color-mix(in srgb, var(--md-surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .md-acceso__panel {
+    width: min(28rem, 100%);
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .md-acceso {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .md-acceso__marca {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ---------- Campo con acción a la derecha ---------- */
+  .md-field__suffix {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    display: flex;
+    align-items: center;
+    transform: translateY(-50%);
+  }
+
+  .md-field__box--con-suffix .md-field__control {
+    padding-right: 3rem;
+  }
+
+  .md-field__accion {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--md-on-surface-variant);
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .md-field__accion:hover {
+    background: var(--md-primary-soft);
+    color: var(--md-primary-ink);
+  }
+
+  /* ---------- Indicador de sesión ---------- */
+  .md-sesion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 999px;
+    background: var(--md-surface-container-high);
+  }
+
+  .md-sesion__icono {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+  }
+
+  .md-sesion__texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .md-sesion__nombre {
+    max-width: 11rem;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .md-sesion__rol {
+    font-size: 0.6875rem;
+    color: var(--md-on-surface-variant);
+  }
 }
 
 @keyframes md-spin {
