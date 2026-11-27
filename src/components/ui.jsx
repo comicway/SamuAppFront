@@ -28,6 +28,7 @@ export function TextField({
   required = false,
   forceFloat = false,
   type = 'text',
+  suffix = null,
   className = '',
   ...props
 }) {
@@ -37,6 +38,7 @@ export function TextField({
     'md-field__box',
     flotado ? 'md-field__box--float' : '',
     error ? 'md-field__box--error' : '',
+    suffix ? 'md-field__box--con-suffix' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -61,6 +63,7 @@ export function TextField({
           {label}
           {required ? <MarcadorObligatorio /> : null}
         </label>
+        {suffix ? <div className="md-field__suffix">{suffix}</div> : null}
       </div>
       <p id={supportId} className={clasesError(error)} aria-live="polite">
         {error || helper || ''}

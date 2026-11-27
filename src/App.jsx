@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import FormularioSiniestro from './components/FormularioSiniestro'
 import PanelResultados from './components/PanelResultados'
+import PantallaAcceso from './components/PantallaAcceso'
+import SesionIndicador from './components/SesionIndicador'
 import { Chip } from './components/ui'
 import { IconoAmbulancia, IconoLuna, IconoSol } from './components/Iconos'
 import { ES_MODO_DEMO } from './services/prediccion'
+import {
+  ES_CONTROL_ACCESO,
+  cerrarSesion,
+  restaurarSesion,
+} from './services/auth/clienteAuth'
+import { suscribir, EVENTO_SESION_EXPIRADA } from './services/eventos'
 
 const CLAVE_TEMA = 'samuapp-tema'
 const TEMA_CLARO = 'light'
@@ -25,6 +33,8 @@ export default function App() {
   const [error, setError] = useState(null)
   const [cargando, setCargando] = useState(false)
   const [tema, setTema] = useState(leerTemaInicial)
+  const [sesion, setSesion] = useState(null)
+  const [acceso, setAcceso] = useState(ES_CONTROL_ACCESO ? 'inicial' : null)
   const panelRef = useRef(null)
   const esOscuro = tema === TEMA_OSCURO
 
@@ -46,6 +56,21 @@ export default function App() {
   function limpiarResultados() {
     setResultado(null)
     setError(null)
+  }
+
+  function manejarSesion(nueva) {
+    setSesion(nueva)
+    setAcceso(null)
+  }
+
+  function manejarCierreSesion() {
+    cerrarSesion()
+    setSesion(null)
+    setAcceso(ES_CONTROL_ACCESO ? 'inicial' : null)
+  }
+
+  function continuarSinSesion() {
+    setAcceso(null)
   }
 
   useEffect(() => {
@@ -71,6 +96,29 @@ export default function App() {
     })
   }, [resultado, error])
 
+  // Restaura la sesión guardada al recargar la página.
+  useEffect(() => {
+    if (!ES_CONTROL_ACCESO) return
+    const guardada = restaurarSesion()
+    if (guardada) {
+      setSesion(guardada)
+      setAcceso(null)
+    }
+  }, [])
+
+  // CA-01.6: si el token deja de ser válido, se vuelve al inicio de sesión
+  // sin desmontar el formulario, para no perder lo ya capturado.
+  useEffect(() => {
+    if (!ES_CONTROL_ACCESO) return undefined
+    return suscribir(EVENTO_SESION_EXPIRADA, () => {
+      cerrarSesion()
+      setSesion(null)
+      setAcceso('reautenticacion')
+    })
+  }, [])
+
+  const accesoVisible = ES_CONTROL_ACCESO && acceso !== null
+
   return (
     <div className="min-h-screen">
       <header className="app-bar">
@@ -90,9 +138,13 @@ export default function App() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Chip tono="neutral" className="hidden sm:inline-flex">
-              Solo front end
-            </Chip>
+            {sesion ? (
+              <SesionIndicador sesion={sesion} onCerrar={manejarCierreSesion} />
+            ) : (
+              <Chip tono="neutral" className="hidden sm:inline-flex">
+                Sin sesión
+              </Chip>
+            )}
             {ES_MODO_DEMO ? <Chip tono="demo">MODO DEMO</Chip> : null}
             <button
               type="button"
@@ -153,13 +205,28 @@ export default function App() {
       <footer className="mx-auto w-full max-w-7xl px-4 pb-8 pt-2 sm:px-6">
         <div className="border-t border-[var(--md-outline-variant)] pt-4 text-xs leading-relaxed text-[var(--md-on-surface-variant)]">
           <p>
-            Prototipo front end de SAMUAPP. No incluye backend, autenticación ni persistencia.
+            Prototipo front end de SAMUAPP. La identidad se verifica en el servicio: el token
+            viaja en la cabecera <code>Authorization: Bearer</code> y el <code>uid</code> se
+            toma del token, nunca del formulario.
           </p>
           <p className="mt-1">
-            Referencias: §3.3 HU-02, §3.4 RN-01 a RN-08, §4.9 y §5.4.2.1 de la Etapa 3.
+            Referencias: §3.3 HU-01 y HU-02, §3.4 RN-01 a RN-08, §4.9, §4.10 y §5.4.2.1 de la
+            Etapa 3.
           </p>
         </div>
       </footer>
+
+      {accesoVisible ? (
+        <div className="md-acceso-fondo" role="dialog" aria-modal="true" aria-label="Acceso al sistema">
+          <div className="md-acceso__panel md-card">
+            <PantallaAcceso
+              variante={acceso}
+              onSesion={manejarSesion}
+              onCancelar={acceso === 'reautenticacion' ? continuarSinSesion : undefined}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

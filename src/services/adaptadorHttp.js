@@ -1,4 +1,6 @@
 import { ErrorPrediccion, MENSAJES_ERROR } from './errores'
+import { obtenerToken } from './auth/token'
+import { emitir, EVENTO_SESION_EXPIRADA } from './eventos'
 
 const CODIGO_POR_ESTADO = {
   400: 'invalid-argument',
@@ -10,6 +12,9 @@ const CODIGO_POR_ESTADO = {
   504: 'deadline-exceeded',
 }
 
+/** Tiempo maximo de espera de la respuesta, en milisegundos. */
+const TIEMPO_MAXIMO_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS ?? 10000)
+
 function construirUrl() {
   const base = String(import.meta.env.VITE_API_BASE_URL ?? '')
     .trim()
@@ -19,11 +24,17 @@ function construirUrl() {
 }
 
 /**
- * Adaptador HTTP preparado para el contrato §4.9. NO está conectado por defecto.
+ * Adaptador HTTP preparado para el contrato §4.9.
+ *
  * Se activa con VITE_ADAPTADOR_PREDICCION=http y VITE_API_BASE_URL.
  *
- * El cuerpo enviado es { data, notas?, siniestroRef? }. §4.9 define data y notas;
- * la ubicación de siniestroRef queda pendiente de confirmación (ver README).
+ * El cuerpo enviado es { data, notas?, siniestroRef? }. La ubicacion de
+ * siniestroRef queda pendiente de confirmacion (ver README).
+ *
+ * La cabecera `Authorization: Bearer <token>` se adjunta automaticamente
+ * cuando hay una sesion vigente (§4.9). Si el servicio responde 401, el token
+ * dejo de ser valido: se emite `EVENTO_SESION_EXPIRADA` para que la interfaz
+ * vuelva al inicio de sesion sin perder el formulario capturado (CA-01.6).
  */
 export async function adaptadorHttp(payload) {
   const base = String(import.meta.env.VITE_API_BASE_URL ?? '').trim()
@@ -39,18 +50,34 @@ export async function adaptadorHttp(payload) {
   if (payload.notas) cuerpo.notas = payload.notas
   if (payload.siniestroRef) cuerpo.siniestroRef = payload.siniestroRef
 
+  const cabeceras = { 'Content-Type': 'application/json' }
+  const token = obtenerToken()
+  if (token) cabeceras.Authorization = `Bearer ${token}`
+
+  const controlador = new AbortController()
+  const temporizador = setTimeout(() => controlador.abort(), TIEMPO_MAXIMO_MS)
+
   let respuesta
   try {
     respuesta = await fetch(construirUrl(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: cabeceras,
       body: JSON.stringify(cuerpo),
+      signal: controlador.signal,
     })
   } catch (causa) {
+    if (causa?.name === 'AbortError') {
+      throw new ErrorPrediccion(
+        'El servicio de predicción no respondió dentro del tiempo esperado. Intenta nuevamente.',
+        { codigo: 'deadline-exceeded', causa },
+      )
+    }
     throw new ErrorPrediccion(MENSAJES_ERROR.unavailable, {
       codigo: 'unavailable',
       causa,
     })
+  } finally {
+    clearTimeout(temporizador)
   }
 
   if (!respuesta.ok) {
@@ -61,6 +88,10 @@ export async function adaptadorHttp(payload) {
       detalle = json?.error?.message ?? json?.message ?? ''
     } catch {
       detalle = ''
+    }
+
+    if (codigo === 'unauthenticated') {
+      emitir(EVENTO_SESION_EXPIRADA, { motivo: 'token-rechazado' })
     }
 
     throw new ErrorPrediccion(detalle || MENSAJES_ERROR[codigo], { codigo })

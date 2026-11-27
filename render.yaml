@@ -1,0 +1,43 @@
+# Configuracion del sitio estatico de SAMUAPP en Render.
+#
+# El front end es una SPA de Vite: Render la compila y sirve el resultado de
+# `dist/`. La reescritura de todas las rutas a index.html es lo que permite
+# que el enrutado del lado del cliente funcione al recargar la pagina.
+#
+# Las variables VITE_* se incorporan al bundle durante la construccion: es
+# Render quien las injecta en el entorno del build, no el navegador.
+services:
+  - type: web
+    name: samuapp-front
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Control de acceso: "demo" (ingreso contra el servicio) o "firebase".
+      - key: VITE_AUTH_MODE
+        value: demo
+      # Adaptador de prediccion: "http" consume el servicio real.
+      - key: VITE_ADAPTADOR_PREDICCION
+        value: http
+      # URL del servicio web de SAMUAPP. Sin barra final.
+      - key: VITE_API_BASE_URL
+        value: https://samuapp-backend.onrender.com
+      - key: VITE_API_PREDICT_PATH
+        value: /api/v1/predictions
+      - key: VITE_API_AUTH_PATH
+        value: /api/v1/auth/sesion
+      - key: VITE_API_REGISTER_PATH
+        value: /api/v1/auth/registro
+      - key: VITE_API_TIMEOUT_MS
+        value: "10000"
+      # La clave de API de Firebase no es un secreto (viaja en el bundle del
+      # navegador); la credencial de servicio nunca llega al cliente.
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
